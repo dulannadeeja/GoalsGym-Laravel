@@ -16,17 +16,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Use the UserRoleFactory to seed the roles table
-        UserRole::factory()->count(3)->create();
 
-        User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            UserRoleSeeder::class,
+            UserSeeder::class,
+            ClassTypeSeeder::class,
+            ScheduledClassSeeder::class,
         ]);
-
-        ClassType::factory()->count(10)->create();
-        ScheduledClass::factory()->count(50)->create();
     }
 }

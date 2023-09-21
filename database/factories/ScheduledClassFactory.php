@@ -4,9 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ScheduledClass>
- */
 class ScheduledClassFactory extends Factory
 {
     /**
@@ -17,9 +14,9 @@ class ScheduledClassFactory extends Factory
     public function definition(): array
     {
         return [
-            'instructor_id' => $this->faker->numberBetween(1, 9),
-            'class_type_id' => $this->faker->numberBetween(1, 9),
-            'started_at' => $this->faker->dateTimeBetween('now', '+1 week'),
+            'instructor_id' => $this->faker->numberBetween(13, 23),
+            'class_type_id' => $this->faker->numberBetween(1, 13),
+            'started_at' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
         ];
     }
 }

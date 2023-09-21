@@ -7,6 +7,7 @@ use App\Models\ScheduledClass;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ScheduledClassController extends Controller
 {
@@ -74,9 +75,11 @@ class ScheduledClassController extends Controller
         // Find the class schedule that you want to delete.
         $scheduledClass = ScheduledClass::class::find($scheduledClassId);
 
-        if ($scheduledClass->instructor->id !== auth()->user()->id) {
+        $response=Gate::inspect('delete', $scheduledClass);
+
+        if($response->denied()){
             return redirect()->route('schedule.index')->with('error', 'You cannot cancel a class that you are not the instructor of, this class is owned by ' . $scheduledClass->instructor->name.'.');
-        }
+        };
 
         if($scheduledClass->started_at < now()) {
             return redirect()->route('schedule.index')->with('error', 'Cannot cancel a class that has already started at ' . $scheduledClass->started_at->format('Y-m-d H:i:s').'now is '.now());
