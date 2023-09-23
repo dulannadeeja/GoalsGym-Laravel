@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\ClassCanceled;
+use App\Jobs\ProcessClassCanceledNotification;
 use App\Models\ScheduledClass;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -42,6 +43,8 @@ class SendClassCancelNotification
             'time' => $scheduledClass->started_at->format('H:i'),
             'canceledBy' => auth()->user()->name,
         ];
-        Notification::send($allBookedUsers, new \App\Notifications\ClassCanceled($mailData));
+        ProcessClassCanceledNotification::dispatch($mailData, $allBookedUsers);
+
+//        Notification::send($allBookedUsers, new \App\Notifications\ClassCanceled($mailData));
     }
 }
