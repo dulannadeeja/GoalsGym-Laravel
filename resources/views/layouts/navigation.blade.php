@@ -12,7 +12,7 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard*', '/member/dashboard', '/instructor/dashboard', '/admin/dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
@@ -22,6 +22,15 @@
                     </x-nav-link>
                     <x-nav-link :href="route('schedule.create')" :active="request()->routeIs('schedule.create')">
                         {{ __('Schedule a Class') }}
+                    </x-nav-link>
+                    @endcan
+
+                    @can('member-only')
+                    <x-nav-link :href="route('member.bookings')" :active="request()->routeIs('member.bookings')">
+                        {{ __('Bookings') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('member.bookings.create')" :active="request()->routeIs('member.bookings.create')">
+                        {{ __('Book a Class') }}
                     </x-nav-link>
                     @endcan
                 </div>

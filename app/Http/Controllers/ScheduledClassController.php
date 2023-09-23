@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ClassCanceled;
 use App\Models\ClassType;
 use App\Models\ScheduledClass;
 use Illuminate\Contracts\View\View;
@@ -16,7 +17,7 @@ class ScheduledClassController extends Controller
      */
     public function index(): View
     {
-        $allScheduledClassesByInstructor = ScheduledClass::where('started_at', '>', now())
+        $allScheduledClassesByInstructor = ScheduledClass::upcoming()
             ->orderBy('started_at', 'asc')
             ->with('classType')
             ->paginate(5);
@@ -86,7 +87,13 @@ class ScheduledClassController extends Controller
         }elseif ($scheduledClass->started_at < now()->addHours(24)) {
             return redirect()->route('schedule.index')->with('error', 'Cannot cancel a class that is starting in less than 24 hours');
         }
-        $scheduledClass->delete();
+
+        // trigger the delete event
+        ClassCanceled::dispatch($scheduledClass);
+
+//        $scheduledClass->delete();
+//        $scheduledClass->bookedUsers()->detach();
+
         return redirect()->route('schedule.index')->with('success', 'Class canceled successfully');
     }
 }
