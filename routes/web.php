@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\auth\AuthProviderController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduledClassController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,5 +44,8 @@ Route::middleware(['auth', 'verified', 'role:member'])->group(function () {
 });
 
 Route::resource('/schedule', ScheduledClassController::class)->only(['index', 'create', 'store', 'destroy'])->middleware(['auth', 'verified', 'role:instructor']);
+
+Route::get('/auth/{provider}/redirect', [AuthProviderController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [AuthProviderController::class, 'callBack']);
 
 require __DIR__ . '/auth.php';

@@ -3,15 +3,17 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -23,8 +25,14 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username', // add username to fillable
         'password',
-        'role_id'
+        'role_id',
+        'provider',
+        'provider_id',
+        'provider_token',
+        'provider_refresh_token',
+        'email_verified_at',
     ];
 
     /**
@@ -48,6 +56,7 @@ class User extends Authenticatable
     ];
 
     // relationships
+
     public function scheduledClasses(): HasMany
     {
         return $this->hasMany(ScheduledClass::class, 'instructor_id');
@@ -67,5 +76,40 @@ class User extends Authenticatable
     public function getRoleNameAttribute(): string
     {
         return $this->role->name;
+    }
+
+    // generate username from nickname and name
+    public static function generateUsername($name, $nickname=null): string
+    {
+        $username = null;
+        if ($nickname) {
+            $username = strtolower($nickname);
+        }
+        else {
+            // Convert the name to lowercase and remove spaces
+            $username = strtolower(str_replace(' ', '', $name));
+        }
+
+        // If the username exists, add a numeric suffix to make it unique
+        $suffix = 1;
+        while (self::isUsernameTaken($username)) {
+            $suffix++;
+            $username = $username . $suffix;
+        }
+
+        return $username;
+    }
+
+    // check if the username is already taken
+    public static function isUsernameTaken($username)
+    {
+        return self::where('username', $username)->exists();
+    }
+
+    // generate password
+    public static function generatePassword()
+    {
+        $password = Str::password(10);
+        return $password;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\UsernameOrEmail;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email_or_username' => ['required', 'string',new UsernameOrEmail],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,11 +42,23 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->only('email_or_username', 'password');
+        $remember = $this->boolean('remember');
+
+        // Check if the input is an email address
+        if (filter_var($credentials['email_or_username'], FILTER_VALIDATE_EMAIL)) {
+            $field = 'email';
+        } else {
+            // If not an email, assume it's a username
+            $field = 'username';
+        }
+
+        // Attempt to authenticate using the selected field
+        if (! Auth::attempt([$field => $credentials['email_or_username'], 'password' => $credentials['password']], $remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email_or_username' => trans('auth.failed'),
             ]);
         }
 
@@ -80,6 +93,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('email_or_username')).'|'.$this->ip());
     }
 }
